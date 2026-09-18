@@ -8,8 +8,6 @@ defmodule Recaptcha do
 
   alias Recaptcha.{Config, Http, Response}
 
-  @http_client Application.get_env(:recaptcha, :http_client, Http)
-
   @doc """
   Verifies a reCAPTCHA response string.
 
@@ -29,7 +27,7 @@ defmodule Recaptcha do
             {:ok, Response.t()} | {:error, [atom]}
   def verify(response, options \\ []) do
     verification =
-      @http_client.request_verification(
+      http_client().request_verification(
         request_body(response, options),
       options
       )
@@ -49,6 +47,10 @@ defmodule Recaptcha do
        %{"success" => false, "challenge_ts" => _timestamp, "hostname" => _host}} ->
         {:error, [:challenge_failed]}
     end
+  end
+
+  defp http_client() do
+    Application.get_env(:recaptcha, :http_client, Http)
   end
 
   defp request_body(response, options) do
